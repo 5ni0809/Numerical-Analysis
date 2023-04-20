@@ -1,0 +1,201 @@
+function varargout = Guess_number(varargin)
+% GUESS_NUMBER MATLAB code for Guess_number.fig
+%      GUESS_NUMBER, by itself, creates a new GUESS_NUMBER or raises the existing
+%      singleton*.
+%
+%      H = GUESS_NUMBER returns the handle to a new GUESS_NUMBER or the handle to
+%      the existing singleton*.
+%
+%      GUESS_NUMBER('CALLBACK',hObject,eventData,handles,...) calls the local
+%      function named CALLBACK in GUESS_NUMBER.M with the given input arguments.
+%
+%      GUESS_NUMBER('Property','Value',...) creates a new GUESS_NUMBER or raises the
+%      existing singleton*.  Starting from the left, property value pairs are
+%      applied to the GUI before Guess_number_OpeningFcn gets called.  An
+%      unrecognized property name or invalid value makes property application
+%      stop.  All inputs are passed to Guess_number_OpeningFcn via varargin.
+%
+%      *See GUI Options on GUIDE's Tools menu.  Choose "GUI allows only one
+%      instance to run (singleton)".
+%
+% See also: GUIDE, GUIDATA, GUIHANDLES
+
+% Edit the above text to modify the response to help Guess_number
+
+% Last Modified by GUIDE v2.5 17-Dec-2018 08:29:18
+
+% Begin initialization code - DO NOT EDIT
+gui_Singleton = 1;
+gui_State = struct('gui_Name',       mfilename, ...
+                   'gui_Singleton',  gui_Singleton, ...
+                   'gui_OpeningFcn', @Guess_number_OpeningFcn, ...
+                   'gui_OutputFcn',  @Guess_number_OutputFcn, ...
+                   'gui_LayoutFcn',  [] , ...
+                   'gui_Callback',   []);
+if nargin && ischar(varargin{1})
+    gui_State.gui_Callback = str2func(varargin{1});
+end
+
+if nargout
+    [varargout{1:nargout}] = gui_mainfcn(gui_State, varargin{:});
+else
+    gui_mainfcn(gui_State, varargin{:});
+end
+% End initialization code - DO NOT EDIT
+
+
+% --- Executes just before Guess_number is made visible.
+function Guess_number_OpeningFcn(hObject, eventdata, handles, varargin)
+% This function has no output args, see OutputFcn.
+% hObject    handle to figure
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+% varargin   command line arguments to Guess_number (see VARARGIN)
+
+% Choose default command line output for Guess_number
+handles.output = hObject;
+setappdata(handles.mygame,'max_value',100)
+setappdata(handles.mygame,'min_value',1)
+max_value=getappdata(handles.mygame,'max_value');
+min_value=getappdata(handles.mygame,'min_value');
+set(handles.text4,'string',[num2str(min_value),' ~ ',num2str(max_value)])
+setappdata(handles.mygame,'gamestart',0)
+% set(handles.guesstimes,'Value',0);
+% Update handles structure
+guidata(hObject, handles);
+
+% UIWAIT makes Guess_number wait for user response (see UIRESUME)
+% uiwait(handles.mygame);
+
+
+% --- Outputs from this function are returned to the command line.
+function varargout = Guess_number_OutputFcn(hObject, eventdata, handles) 
+% varargout  cell array for returning output args (see VARARGOUT);
+% hObject    handle to figure
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Get default command line output from handles structure
+varargout{1} = handles.output;
+
+
+
+function inputnumber_Callback(hObject, eventdata, handles)
+% hObject    handle to inputnumber (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+gamestart=getappdata(handles.mygame,'gamestart');
+if gamestart==1
+    inputvalue=str2double(get(handles.inputnumber,'String')); %玩家輸入值
+    final_value=getappdata(handles.mygame,'final_value'); %終極密碼答案
+    
+    %代入目前範圍
+    max_value=getappdata(handles.mygame,'max_value');
+    min_value=getappdata(handles.mygame,'min_value');
+    if inputvalue>min_value && inputvalue<max_value
+        
+        if inputvalue>final_value
+            setappdata(handles.mygame,'max_value',inputvalue)
+            max_value=getappdata(handles.mygame,'max_value');
+            set(handles.text4,'string',[num2str(min_value),' ~ ',num2str(max_value)])
+            guesstimes=get(handles.guesstimes,'value')+1;
+            set(handles.guesstimes,'value',guesstimes)
+            set(handles.guesstimes,'string',guesstimes)
+            guidata(hObject, handles);
+
+        elseif inputvalue<final_value
+            setappdata(handles.mygame,'min_value',inputvalue)
+            min_value=getappdata(handles.mygame,'min_value');
+            set(handles.text4,'string',[num2str(min_value),' ~ ',num2str(max_value)])
+            guesstimes=get(handles.guesstimes,'value')+1;
+            set(handles.guesstimes,'value',guesstimes)
+            set(handles.guesstimes,'string',guesstimes)
+            guidata(hObject, handles);
+
+        elseif inputvalue==final_value
+            guesstimes=get(handles.guesstimes,'value')+1;
+            set(handles.guesstimes,'value',guesstimes)
+            set(handles.guesstimes,'string',guesstimes)
+            set(handles.text4,'string','Boom !! GameOver~')
+            pause(2)
+            
+            answer = questdlg('要不要再玩一局~?', ...
+                '遊戲結束', ...
+                '繼續', '離開','繼續');
+            % Handle response
+            switch answer
+                case '繼續'
+                    set(handles.guesstimes,'value',0)
+                    set(handles.guesstimes,'string',0)
+                    setappdata(handles.mygame,'gamestart',0)
+                    set(handles.text4,'string',[num2str(1),' ~ ',num2str(100)])
+                    set(handles.text9,'string','尚未開始')
+                    setappdata(handles.mygame,'max_value',100)
+                    setappdata(handles.mygame,'min_value',1)
+                case '離開'
+                    close all
+            end
+        end
+    else
+        msgbox('輸入超出範圍，請再試一次')
+    end
+end
+
+% if isnumeric(value) & length(value)==1 & ...
+%         value>=1 &...
+%         value<=10
+%     final_value=get(handles.mygame,'final_value');
+%     set(handles.text4,'String',final_value);
+% else
+%     errorCount=getappdata(handles.gui02,'errorCount')+1;
+%     setappdata(handles.gui02,'errorCount',errorCount);
+%     errorMsg=['數值不合法:第',num2str(errorCount),'次錯誤'];
+%     set(handles.myText,'string',errorMsg);
+% end
+
+% Hints: get(hObject,'String') returns contents of inputnumber as text
+%        str2double(get(hObject,'String')) returns contents of inputnumber as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function inputnumber_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to inputnumber (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in pushbutton1.
+function pushbutton1_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+max_value=getappdata(handles.mygame,'max_value');
+final_value=ceil(rand*max_value)-1
+% setappdata(handles.mygame,)
+setappdata(handles.mygame,'final_value',final_value)
+setappdata(handles.mygame,'gamestart',1)
+set(handles.text9,'string','遊戲進行中')
+
+
+
+
+% --- Executes on button press in pushbutton2.
+function pushbutton2_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton2 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+close all; % 關閉
+
+
+% --------------------------------------------------------------------
+function Untitled_1_Callback(hObject, eventdata, handles)
+% hObject    handle to Untitled_1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
